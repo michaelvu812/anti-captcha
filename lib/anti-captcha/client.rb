@@ -9,6 +9,7 @@ module AntiCaptcha
       @retries_count = options.delete(:retries_count) || 10
       @sleep = options.delete(:sleep) || 5
       @options = AntiCaptcha.configuration.options.merge(options)
+      @decoded = false
     end
 
     # type: file data (bin)
@@ -17,6 +18,7 @@ module AntiCaptcha
       case request_image(image, type)
       when /OK\|(.+)/
         @captcha_id = $1
+        @decoded = true
         check
       when /^ERROR_(.+)/
         raise error_class($1)
@@ -48,6 +50,10 @@ module AntiCaptcha
 
     def get_stats(date = Date.today)
       request_stats date
+    end
+
+    def decoded?
+      @decoded & @captcha_id.present?
     end
 
     private
